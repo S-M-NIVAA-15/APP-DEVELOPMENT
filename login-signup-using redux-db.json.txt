@@ -1,0 +1,561 @@
+src
+redux
+reducers.js
+
+// redux/reducers.js
+import { ADD_USER, SET_USERS } from './actions';
+
+const initialState = {
+  users: [],
+};
+
+const userReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_USER:
+      return { ...state, users: [...state.users, action.payload] };
+    case SET_USERS:
+      return { ...state, users: action.payload };
+    default:
+      return state;
+  }
+};
+
+export default userReducer;
+
+
+
+actions.js
+// redux/actions.js
+export const ADD_USER = 'ADD_USER';
+export const SET_USERS = 'SET_USERS';
+
+export const addUser = (user) => ({
+  type: ADD_USER,
+  payload: user,
+});
+
+export const setUsers = (users) => ({
+  type: SET_USERS,
+  payload: users,
+});
+
+
+store.js
+// redux/store.js
+import { createStore, applyMiddleware } from 'redux';
+import { thunk } from 'redux-thunk';
+import userReducer from './reducers';
+
+const store = createStore(userReducer, applyMiddleware(thunk));
+
+export default store;
+
+
+
+App.css
+/* App.css */
+
+.container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form div {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+p {
+  text-align: center;
+}
+
+p a {
+  color: #4caf50;
+  text-decoration: none;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}
+
+
+App.js
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import Login from './Login';
+import Signup from './Signup';
+import Home from './Home';
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </Router>
+    </Provider>
+  );
+};
+
+export default App;
+
+
+Home.js
+// Home.js
+import React from 'react';
+import './App.css';
+
+const Home = () => {
+  return (
+    <div
+      className="container"
+      style={{
+        backgroundImage: 'url("https://cdni.iconscout.com/illustration/premium/thumb/online-job-search-4836622-4032953.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'cover',
+        alignItems: 'center',
+        color: 'white', // Optional: Ensure text is readable over the background
+        textAlign: 'center', // Optional: Center-align text
+      }}
+    >
+      <h2>Welcome to the Home Page!</h2>
+    </div>
+  );
+};
+
+export default Home;
+
+
+
+index.css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+
+index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+
+Login.js
+// Login.js
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './App.css';
+
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('http://localhost:3001/users')
+      .then((response) => response.json())
+      .then((data) => setUsers(data));
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const user = users.find((user) => user.email === email && user.password === password);
+    if (user) {
+      navigate('/home');
+    } else {
+      setError('Invalid email or password');
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundImage: "url('https://media.licdn.com/dms/image/D5612AQHmWpsKqCEUgQ/article-cover_image-shrink_600_2000/0/1692110377639?e=2147483647&v=beta&t=61b3z7n63D8ABJOVLQKG4W6iObvwTBn-ZuMabStZugM')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '20px',
+      }}
+    >
+      <h2 style={{ color: '#fff', marginBottom: '20px', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '2rem' }}>
+        Login
+      </h2>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '20px',
+          borderRadius: '15px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          width: '230px',
+          textAlign: 'left',
+        }}
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            style={{ display: 'block', marginBottom: '8px', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}
+          >
+            Email:
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              boxSizing: 'border-box',
+              border: '2px solid #ccc',
+              borderRadius: '8px',
+              fontSize: '1rem',
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            style={{ display: 'block', marginBottom: '8px', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}
+          >
+            Password:
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              boxSizing: 'border-box',
+              border: '2px solid #ccc',
+              borderRadius: '8px',
+              fontSize: '1rem',
+            }}
+          />
+        </div>
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        <button
+          type="submit"
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#000000',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: 'Comic Sans MS, cursive, sans-serif',
+            fontSize: '1.2rem',
+          }}
+        >
+          Login
+        </button>
+      </form>
+      <p style={{ color: '#b72527', marginTop: '40px', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}>
+        Don't have an account? <Link to="/signup" style={{ color: '#2f50ba', fontSize: '1.2rem' }}>Sign up</Link>
+      </p>
+    </div>
+  );
+};
+
+export default Login;
+
+
+Signup.js
+// Signup.js
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './App.css';
+
+const Signup = () => {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newUser = { email, name, password };
+
+    // Make a POST request to add the new user to db.json
+    await fetch('http://localhost:3001/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newUser),
+    });
+
+    navigate('/');
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundImage: "url('https://www.asarampublicschool.com/images/job.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '20px',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '30px',
+          borderRadius: '15px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          width: '250px',
+          textAlign: 'left',
+        }}
+      >
+        <h2 style={{ textAlign: 'center', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif' }}>Sign Up</h2>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Email:
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Name:
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Password:
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              fontSize: '1.2rem',
+            }}
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;
+
+
+package.json
+{
+  "name": "second",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^6.25.1",
+    "react-scripts": "5.0.1",
+    "redux": "^5.0.1",
+    "redux-thunk": "^3.1.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "server": "json-server --watch db.json --port 3001"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+
+db.json
+
+{
+  "users": [
+    {
+}
+  ]
+}
+
+
+
+install router,axios,json server,etc
