@@ -1,0 +1,3172 @@
+FRONTEND
+
+public/index.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>JOB SEARCH</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
+
+
+
+
+
+
+
+
+redux/action.js
+
+export const ADD_USER = 'ADD_USER';
+export const SET_USERS = 'SET_USERS';
+
+export const addUser = (user) => ({
+  type: ADD_USER,
+  payload: user,
+});
+
+export const setUsers = (users) => ({
+  type: SET_USERS,
+  payload: users,
+});
+
+export const fetchUsers = () => async (dispatch) => {
+  const response = await fetch('http://localhost:3001/users');
+  const users = await response.json();
+  dispatch(setUsers(users));
+};
+
+
+
+
+redux/reducer.js
+
+// redux/reducers.js
+import { ADD_USER, SET_USERS } from './actions';
+
+const initialState = {
+  users: [],
+};
+
+const userReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case ADD_USER:
+      return { ...state, users: [...state.users, action.payload] };
+    case SET_USERS:
+      return { ...state, users: action.payload };
+    default:
+      return state;
+  }
+};
+
+export default userReducer;
+
+
+
+redux/store.js
+
+import { createStore, applyMiddleware } from 'redux';
+import { thunk } from 'redux-thunk';
+import userReducer from './reducers';
+
+const store = createStore(userReducer, applyMiddleware(thunk));
+
+export default store;
+
+
+
+
+Admin.js
+
+// Admin.js
+import React, { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { RolesContext } from './RolesContext';
+
+const Admin = () => {
+  const [role, setRole] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [location, setLocation] = useState('');
+  const [skills, setSkills] = useState('');
+  const [experience, setExperience] = useState('');
+  const [salary, setSalary] = useState('');
+  const [imageURL, setImageURL] = useState('');
+  const { roles, addRole } = useContext(RolesContext);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newRole = { role, companyName, location, skills, experience, salary, imageURL };
+    await addRole(newRole);
+    setRole('');
+    setCompanyName('');
+    setLocation('');
+    setSkills('');
+    setExperience('');
+    setSalary('');
+    setImageURL('');
+  };
+
+  return (
+    <div style={outerContainerStyle}>
+      <Link to="/admin-dashboard">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/16/16304.png"
+          alt="Logo"
+          style={logoStyle}
+        />
+      </Link>
+      <div style={containerStyle}>
+        <h2>Admin Page</h2>
+        <form onSubmit={handleSubmit} style={formStyle}>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Role:</label>
+            <input type="text" value={role} onChange={(e) => setRole(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Company Name:</label>
+            <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Location:</label>
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Skills:</label>
+            <input type="text" value={skills} onChange={(e) => setSkills(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Years of Experience:</label>
+            <input type="text" value={experience} onChange={(e) => setExperience(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Salary:</label>
+            <input type="text" value={salary} onChange={(e) => setSalary(e.target.value)} required style={inputStyle} />
+          </div>
+          <div style={formGroupStyle}>
+            <label style={labelStyle}>Image URL:</label>
+            <input type="text" value={imageURL} onChange={(e) => setImageURL(e.target.value)} style={inputStyle} />
+          </div>
+          <button type="submit" style={buttonStyle}>Add Role</button>
+        </form>
+        <div style={rolesContainerStyle}>
+          <h3>Added Roles</h3>
+          {roles.map((role, index) => (
+            <div key={index} style={roleBoxStyle}>
+              {role.imageURL && <img src={role.imageURL} alt={role.role} style={imageStyle} />}
+              <p><strong>Role:</strong> {role.role}</p>
+              <p><strong>Company Name:</strong> {role.companyName}</p>
+              <p><strong>Location:</strong> {role.location}</p>
+              <p><strong>Skills:</strong> {role.skills}</p>
+              <p><strong>Years of Experience:</strong> {role.experience}</p>
+              <p><strong>Salary:</strong> {role.salary}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const outerContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://media.licdn.com/dms/image/D5612AQFnsep8wzoSfg/article-cover_image-shrink_720_1280/0/1683311543414?e=2147483647&v=beta&t=bJlkbcCIPBsCcOLC75Dco9Nc-oAW2tVqHpTB8qzKXbM")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+  position: 'relative',
+};
+
+const containerStyle = {
+  padding: '20px',
+  maxWidth: '600px',
+  margin: '0 auto',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '8px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+};
+
+const formStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const formGroupStyle = {
+  marginBottom: '15px',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '8px',
+  fontSize: '1.2rem',
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  boxSizing: 'border-box',
+  border: '2px solid #4caf50',
+  borderRadius: '8px',
+  fontSize: '1rem',
+};
+
+const buttonStyle = {
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '12px',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '1.2rem',
+};
+
+const rolesContainerStyle = {
+  marginTop: '30px',
+};
+
+const roleBoxStyle = {
+  backgroundColor: '#fff',
+  padding: '10px',
+  margin: '10px 0',
+  borderRadius: '4px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+};
+
+const imageStyle = {
+  width: '100%',
+  height: 'auto',
+  maxHeight: '200px',
+  marginBottom: '10px',
+  borderRadius: '4px',
+};
+
+const logoStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  width: '50px',
+  height: '50px',
+  cursor: 'pointer',
+};
+
+export default Admin;
+
+
+
+
+
+
+AdminDashboard.js
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const AdminDashboard = () => {
+  return (
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        <Link to="/Home" style={homeButtonStyle}>Home</Link>
+      </div>
+      <div style={boxStyle}>
+        <h2>Admin Dashboard</h2>
+        <div style={linkContainerStyle}>
+          <Link to="/admin/add-role" style={linkStyle}>Add Role</Link>
+          <Link to="/admin/update-role" style={linkStyle}>Update Role</Link>
+          <Link to="/admin/delete-role" style={linkStyle}>Delete Role</Link>
+          <Link to="/admin/dashboard" style={linkStyle}>Dashboard</Link>
+          <Link to="/admin/profile" style={linkStyle}>Profile</Link> {/* New Profile Button */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url(https://png.pngtree.com/thumb_back/fh260/background/20230623/pngtree-futuristic-city-skyline-3d-rendered-buildings-with-smart-technology-dashboard-and-image_3658731.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const headerStyle = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: '1200px',
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+};
+
+const boxStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '600px',
+  textAlign: 'center',
+};
+
+const linkContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+};
+
+const linkStyle = {
+  margin: '10px 0',
+  padding: '10px 20px',
+  textDecoration: 'none',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  borderRadius: '8px',
+};
+
+const homeButtonStyle = {
+  padding: '10px 20px',
+  textDecoration: 'none',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  borderRadius: '8px',
+};
+
+export default AdminDashboard;
+
+
+
+
+AdminLogin.js
+
+// AdminLogin.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const AdminLogin = () => {
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
+  const adminPassword = '12345'; 
+
+  useEffect(() => {
+    if (password === adminPassword) {
+      navigate('/admin-dashboard');
+    } else if (password) {
+      setErrorMessage('Invalid password');
+    }
+  }, [password, navigate]);
+
+  return (
+    <div style={containerStyle}>
+      <div style={formStyle}>
+        <h2 style={titleStyle}>Admin Login</h2>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Enter Admin Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setErrorMessage('');
+            }}
+            style={inputStyle}
+            placeholder="Enter password"
+            required
+          />
+        </div>
+        {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://www.hurix.com/wp-content/uploads/2022/01/Cyber-security.jpg")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const formStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '30px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  width: '300px',
+  textAlign: 'left',
+};
+
+const formGroupStyle = {
+  marginBottom: '20px',
+};
+
+const titleStyle = {
+  textAlign: 'center',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '8px',
+  fontSize: '1.2rem',
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  boxSizing: 'border-box',
+  border: '2px solid #4caf50',
+  borderRadius: '8px',
+  fontSize: '1rem',
+};
+
+const errorStyle = {
+  color: 'red',
+  textAlign: 'center',
+  fontSize: '1rem',
+  marginTop: '10px',
+};
+
+export default AdminLogin;
+
+
+
+AdminPanel.js
+
+import React, { useContext, useEffect } from 'react';
+import { RolesContext } from './RolesContext';
+import { ApplicationCountContext } from './ApplicationCountContext';
+import { useNavigate } from 'react-router-dom';
+
+const AdminPanel = () => {
+  const { roles } = useContext(RolesContext);
+  const { applicationCount, setApplicationCount } = useContext(ApplicationCountContext);
+  const navigate = useNavigate(); // Hook to programmatically navigate
+
+  useEffect(() => {
+    fetch('http://localhost:3001/applications')
+      .then(response => response.json())
+      .then(data => {
+        setApplicationCount(data.length);
+      });
+  }, [setApplicationCount]);
+
+  const handleLogoClick = () => {
+    navigate('/admin-dashboard'); // Redirect to the admin dashboard
+  };
+
+  return (
+    <div style={containerStyle}>
+      <img 
+        src="https://cdn-icons-png.flaticon.com/512/16/16304.png" 
+        alt="Logo" 
+        style={logoStyle} 
+        onClick={handleLogoClick} // Add click handler to logo
+      />
+      <h1 style={headingStyle}>Admin Panel</h1>
+      <div style={rolesSectionStyle}>
+        <h2 style={subHeadingStyle}>Roles</h2>
+        <div style={boxStyle}>
+          <p style={countStyle}>{roles.length}</p>
+        </div>
+      </div>
+      <div style={appSectionStyle}>
+        <h2 style={sub2HeadingStyle}>Applications</h2>
+        <div style={appStyle}>
+          <p style={countStyle}>{applicationCount}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F251dba01-f12a-4be9-942c-eda1537c81ce_1792x1024.png")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+  position: 'relative', // Added to position the logo absolutely
+};
+
+const headingStyle = {
+  marginBottom: '20px',
+  fontSize: '2.5rem',
+  color: '#fff', // Adjusted color for better visibility
+};
+
+const logoStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  width: '50px', // Adjust the size of the logo
+  height: '50px',
+  cursor: 'pointer', // Change cursor to pointer for better UX
+};
+
+const rolesSectionStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: '800px', // Set a max width for the section
+  backgroundColor: 'rgba(255, 255, 255, 0.9)', // Lightly transparent white background for the section
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+  marginBottom: '40px', // Add space below the roles section
+};
+
+const appSectionStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: '800px', // Set a max width for the section
+  backgroundColor: 'rgba(255, 255, 255, 0.9)', // Lightly transparent white background for the section
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+  marginBottom: '40px',
+};
+
+const subHeadingStyle = {
+  marginBottom: '20px',
+  fontSize: '1.5rem',
+  color: '#333', // Adjusted color for better visibility
+};
+
+const sub2HeadingStyle = {
+  marginBottom: '20px',
+  fontSize: '1.5rem',
+  color: '#333', // Adjusted color for better visibility
+};
+
+const boxStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '250px', // Adjusted width
+  height: '100px', // Adjusted height
+  backgroundColor: '#ffffff',
+  border: '1px solid #cccccc',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  padding: '10px',
+  margin: '10px 0', // Adjusted margin for better centering
+};
+
+const appStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '250px', // Adjusted width
+  height: '100px', // Adjusted height
+  backgroundColor: '#ffffff',
+  border: '1px solid #cccccc',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  padding: '10px',
+  margin: '10px 0', // Adjusted margin for better centering
+};
+
+const countStyle = {
+  fontSize: '2rem', // Increased font size for the number
+  margin: '0', // Remove default margin
+  color: '#333', // Adjusted color for better visibility
+};
+
+export default AdminPanel;
+
+
+
+
+AllRoles.js
+
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
+const AllRoles = () => {
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const response = await fetch('http://localhost:3001/roles');
+      const data = await response.json();
+      setRoles(data);
+    };
+
+    fetchRoles();
+  }, []);
+
+  const handleDelete = async (id) => {
+    const response = await fetch(`http://localhost:3001/roles/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.ok) {
+      setRoles(roles.filter(role => role.id !== id));
+    }
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h2 style={headingStyle}>All Roles</h2>
+      <div style={rolesContainerStyle}>
+        {roles.map((role) => (
+          <div key={role.id} style={roleBoxStyle}>
+            {role.imageURL && <img src={role.imageURL} alt={role.role} style={imageStyle} />}
+            <p><strong>Role:</strong> {role.role}</p>
+            <p><strong>Company Name:</strong> {role.companyName}</p>
+            <p><strong>Location:</strong> {role.location}</p>
+            <p><strong>Skills:</strong> {role.skills}</p>
+            <p><strong>Years of Experience:</strong> {role.experience}</p>
+            <p><strong>Salary:</strong> {role.salary}</p>
+            <button onClick={() => handleDelete(role.id)} style={deleteButtonStyle}>Delete</button>
+          </div>
+        ))}
+      </div>
+      <Link to="/admin-dashboard" style={backButtonStyle}>Back to Home</Link>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://media.licdn.com/dms/image/C4E12AQFLEz1KK5pjag/article-cover_image-shrink_720_1280/0/1627053590470?e=2147483647&v=beta&t=qF2GAXNunSc3tooWc10syZW7-ougg5u6gzefmkSZSl8")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const headingStyle = {
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '2rem',
+  margin: '0 0 20px 0',
+};
+
+const rolesContainerStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '1200px',
+  boxSizing: 'border-box',
+};
+
+const roleBoxStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '20px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  textAlign: 'left',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  height: 'auto',
+  boxSizing: 'border-box',
+};
+
+const imageStyle = {
+  width: '100%',
+  height: 'auto',
+  maxHeight: '200px',
+  marginBottom: '10px',
+  borderRadius: '4px',
+};
+
+const deleteButtonStyle = {
+  backgroundColor: '#f44336',
+  color: 'white',
+  padding: '8px 16px',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '1rem',
+  textAlign: 'center',
+};
+
+const backButtonStyle = {
+  marginTop: '20px',
+  textDecoration: 'none',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '10px 20px',
+  borderRadius: '8px',
+};
+
+export default AllRoles;
+
+
+
+App.css
+
+/* App.css */
+
+.container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form div {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+p {
+  text-align: center;
+}
+
+p a {
+  color: #4caf50;
+  text-decoration: none;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}
+
+
+
+
+App.js
+
+// App.js
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+
+import { ApplicationCountProvider } from './ApplicationCountContext';
+
+import Login from './Login';
+import Signup from './Signup';
+import Home from './Home';
+import Admin from './Admin';
+import Employer from './Employer';
+import Seeker from './Seeker';
+import Apply from './Apply';
+import ApplicationStatus from './ApplicationStatus';
+import Footer from './Footer';
+import AdminLogin from './AdminLogin';
+import EmployerLogin from './EmployerLogin';
+import AdminDashboard from './AdminDashboard';
+import UpdateRole from './UpdateRole';
+import EditRole from './EditRole'; 
+import AllRoles from './AllRoles';
+import AdminPanel from './AdminPanel';
+import Profile from './Profile';
+import Company from './Company'; // Import the new Company component
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <ApplicationCountProvider>
+        <Router>
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/employer" element={<Employer />} />
+              <Route path="/seeker" element={<Seeker />} />
+              <Route path="/apply/:id" element={<Apply />} />
+              <Route path="/application-status" element={<ApplicationStatus />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/employer-login" element={<EmployerLogin />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/add-role" element={<Admin />} />
+              <Route path="/admin/update-role" element={<UpdateRole />} />
+              <Route path="/admin/edit-role/:id" element={<EditRole />} />
+              <Route path="/admin/delete-role" element={<AllRoles />} />
+              <Route path="/admin/dashboard" element={<AdminPanel />} />
+              <Route path="/admin/profile" element={<Profile />} />
+              <Route path="/company" element={<Company />} /> {/* New route for Company page */}
+            </Routes>
+            <Footer />
+          </div>
+        </Router>
+      </ApplicationCountProvider>
+    </Provider>
+  );
+};
+
+export default App;
+
+
+
+
+ApplicationCountContext.js
+
+// ApplicationCountContext.js
+import React, { createContext, useState } from 'react';
+
+export const ApplicationCountContext = createContext();
+
+export const ApplicationCountProvider = ({ children }) => {
+  const [applicationCount, setApplicationCount] = useState(0);
+
+  return (
+    <ApplicationCountContext.Provider value={{ applicationCount, setApplicationCount }}>
+      {children}
+    </ApplicationCountContext.Provider>
+  );
+};
+
+
+
+
+ApplicationStatus.js
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const ApplicationStatus = () => {
+  const [application, setApplication] = useState(null);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchApplicationData = async () => {
+      const applicationId = localStorage.getItem('applicationId'); 
+      if (applicationId) {
+        try {
+          const response = await fetch(`http://localhost:3001/applications/${applicationId}`);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          console.log('Fetched application data:', data); 
+          setApplication(data);
+        } catch (error) {
+          console.error('Error fetching application data:', error); 
+          setError(error.message);
+        }
+      } else {
+        setError('No application found. Please submit an application first.');
+      }
+    };
+
+    fetchApplicationData();
+  }, [application]); 
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'Approved':
+        return { color: 'green', fontWeight: 'bold' };
+      case 'Pending':
+        return { color: 'orange', fontWeight: 'bold' };
+      case 'Rejected':
+        return { color: 'red', fontWeight: 'bold' };
+      default:
+        return {};
+    }
+  };
+
+  const handleGoHome = () => {
+    navigate('/Home'); 
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h2>Application Status</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {application ? (
+        <div style={applicationDetailsStyle}>
+          <p><strong>Name:</strong> {application.name}</p>
+          <p><strong>Education:</strong> {application.education}</p>
+          <p><strong>Year of Graduation:</strong> {application.graduationYear}</p>
+          <p><strong>Skills:</strong> {application.skills}</p>
+          <p><strong>Languages:</strong> {application.languages}</p>
+          <p><strong>Native Language:</strong> {application.native}</p>
+          <p><strong>CGPA:</strong> {application.cgpa}</p>
+          <p><strong>Phone Number:</strong> {application.phoneNumber}</p>
+          <p><strong>Role ID:</strong> {application.roleId}</p>
+          <p>
+            <strong>Status:</strong>
+            <span style={getStatusStyle(application.status)}>
+              {application.status}
+            </span>
+          </p>
+        </div>
+      ) : (
+        <p>Loading application data...</p>
+      )}
+      <div style={buttonContainerStyle}>
+        <button onClick={handleGoHome} style={buttonStyle}>Go to Home Page</button>
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  padding: '20px',
+  boxSizing: 'border-box',
+  backgroundImage: 'url(https://images.moneycontrol.com/static-mcnews/2023/03/Job-search-770x433.jpg?impolicy=website&width=770&height=431)', 
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+};
+
+const applicationDetailsStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '20px',
+  borderRadius: '10px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '400px',
+  textAlign: 'left',
+  marginBottom: '20px', 
+};
+
+const buttonContainerStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+};
+
+const buttonStyle = {
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '10px',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '1rem',
+};
+
+export default ApplicationStatus;
+
+
+
+
+Apply.js
+
+import React, { useState, useContext } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ApplicationCountContext } from './ApplicationCountContext';
+
+const Apply = () => {
+  const { id } = useParams(); 
+  const navigate = useNavigate();
+  const { setApplicationCount } = useContext(ApplicationCountContext);
+
+  const [name, setName] = useState('');
+  const [education, setEducation] = useState('');
+  const [graduationYear, setGraduationYear] = useState('');
+  const [skills, setSkills] = useState('');
+  const [languages, setLanguages] = useState('');
+  const [native, setNative] = useState('');
+  const [cgpa, setCgpa] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const applicationData = {
+      name,
+      education,
+      graduationYear,
+      skills,
+      languages,
+      native,
+      cgpa,
+      phoneNumber,
+      roleId: id,
+    };
+
+    const response = await fetch('http://localhost:3001/applications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(applicationData),
+    });
+
+    const newApplication = await response.json();
+    localStorage.setItem('applicationId', newApplication.id);
+
+    setSubmitted(true);
+
+    // Update application count
+    fetch('http://localhost:3001/applications')
+      .then(response => response.json())
+      .then(data => {
+        setApplicationCount(data.length);
+      });
+  };
+
+  const handleGoBack = () => {
+    navigate('/Seeker'); 
+  };
+
+  const handleTrackApplication = () => {
+    navigate('/application-status'); 
+  };
+
+  return (
+    <div style={containerStyle}>
+      {submitted ? (
+        <div style={thankYouMessageStyle}>
+          <h2>Thank you for applying!</h2>
+          <p>Your application has been submitted successfully.</p>
+          <button onClick={handleGoBack} style={buttonStyle}>Go Back</button>
+          <button onClick={handleTrackApplication} style={buttonStyle}>Track Your Application</button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={formStyle}>
+          <h2>Apply for Role</h2>
+          <div style={formGroupStyle}>
+            <label>Name: *</label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Education: *</label>
+            <input 
+              type="text" 
+              value={education} 
+              onChange={(e) => setEducation(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Year of Graduation: *</label>
+            <input 
+              type="text" 
+              value={graduationYear} 
+              onChange={(e) => setGraduationYear(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Skills: *</label>
+            <input 
+              type="text" 
+              value={skills} 
+              onChange={(e) => setSkills(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Languages: *</label>
+            <input 
+              type="text" 
+              value={languages} 
+              onChange={(e) => setLanguages(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Native Language: *</label>
+            <input 
+              type="text" 
+              value={native} 
+              onChange={(e) => setNative(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>CGPA: *</label>
+            <input 
+              type="text" 
+              value={cgpa} 
+              onChange={(e) => setCgpa(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <div style={formGroupStyle}>
+            <label>Phone Number: *</label>
+            <input 
+              type="tel" 
+              value={phoneNumber} 
+              onChange={(e) => setPhoneNumber(e.target.value)} 
+              style={inputStyle} 
+              required 
+            />
+          </div>
+          <button type="submit" style={buttonStyle}>Submit</button>
+        </form>
+      )}
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url(https://img.freepik.com/free-photo/flat-lay-desk-concept-with-copy-space_23-2148236810.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+  boxSizing: 'border-box',
+};
+
+const formStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '30px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '400px',
+  textAlign: 'left',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const formGroupStyle = {
+  marginBottom: '20px',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '8px',
+  boxSizing: 'border-box',
+  borderRadius: '4px',
+  border: '1px solid #ccc',
+  fontSize: '1rem',
+};
+
+const buttonStyle = {
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '10px',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  fontSize: '1rem',
+  marginTop: '10px',
+};
+
+const thankYouMessageStyle = {
+  textAlign: 'center',
+};
+
+export default Apply;
+
+
+
+
+
+Company.js
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
+const Company = () => {
+  const [profiles, setProfiles] = useState([]);
+
+  useEffect(() => {
+    // Fetch existing profiles from db.json
+    fetch('http://localhost:3001/profiles')
+      .then(response => response.json())
+      .then(data => setProfiles(data));
+  }, []);
+
+  return (
+    <div style={containerStyle}>
+      {/* Back button */}
+      <Link to="/seeker" style={backButtonStyle}>Back</Link>
+
+      <h2>Company Profiles</h2>
+      <div style={profilesContainerStyle}>
+        {profiles.length > 0 ? (
+          profiles.map((profile, index) => (
+            <div key={index} style={profileStyle}>
+              <p><strong>Company Name:</strong> {profile.companyName}</p>
+              <p><strong>URL:</strong> <a href={profile.url} target="_blank" rel="noopener noreferrer">{profile.url}</a></p>
+            </div>
+          ))
+        ) : (
+          <p>No profiles available.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  padding: '20px',
+  backgroundImage: 'url(https://etimg.etb2bimg.com/photo/92969147.cms)', // Updated background image
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  position: 'relative', // Required for positioning the Back button
+};
+
+const profilesContainerStyle = {
+  marginTop: '20px',
+  width: '100%',
+  maxWidth: '600px',
+};
+
+const profileStyle = {
+  marginBottom: '15px',
+  padding: '10px',
+  backgroundColor: 'white',
+  borderRadius: '4px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+};
+
+const backButtonStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  padding: '10px 15px', // Increased padding for a larger button
+  backgroundColor: '#4caf50',
+  color: 'white',
+  textDecoration: 'none',
+  borderRadius: '4px',
+  fontSize: '1rem', // Increased font size
+  textAlign: 'center',
+  fontWeight: 'bold', // Optional: Make text bold for better visibility
+};
+
+export default Company;
+
+
+
+
+EditRole.js
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+const EditRole = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [role, setRole] = useState({
+    role: '',
+    companyName: '',
+    location: '',
+    skills: '',
+    experience: '',
+    salary: '',
+    imageURL: ''
+  });
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const response = await fetch(`http://localhost:3001/roles/${id}`);
+      const data = await response.json();
+      setRole(data);
+    };
+
+    fetchRole();
+  }, [id]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setRole({ ...role, [name]: value });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    const response = await fetch(`http://localhost:3001/roles/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(role),
+    });
+
+    if (response.ok) {
+      navigate('/admin/update-role');
+    }
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h2 style={headingStyle}>Edit Role</h2>
+      <form onSubmit={handleUpdate} style={formStyle}>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Role:</label>
+          <input
+            type="text"
+            name="role"
+            value={role.role}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Company Name:</label>
+          <input
+            type="text"
+            name="companyName"
+            value={role.companyName}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Location:</label>
+          <input
+            type="text"
+            name="location"
+            value={role.location}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Skills:</label>
+          <input
+            type="text"
+            name="skills"
+            value={role.skills}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Years of Experience:</label>
+          <input
+            type="text"
+            name="experience"
+            value={role.experience}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Salary:</label>
+          <input
+            type="text"
+            name="salary"
+            value={role.salary}
+            onChange={handleInputChange}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Image URL:</label>
+          <input
+            type="text"
+            name="imageURL"
+            value={role.imageURL}
+            onChange={handleInputChange}
+            style={inputStyle}
+          />
+        </div>
+        <button type="submit" style={buttonStyle}>Update Role</button>
+      </form>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://weborigo.com/uploads/original/64d61fba38df1.png")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const headingStyle = {
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '2rem',
+  margin: '0 0 20px 0',
+};
+
+const formStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)', // Lightly transparent white background for form
+  padding: '30px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  width: '100%',
+  maxWidth: '500px',
+  textAlign: 'left',
+};
+
+const formGroupStyle = {
+  marginBottom: '20px',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '8px',
+  fontSize: '1.2rem',
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  boxSizing: 'border-box',
+  border: '2px solid #4caf50',
+  borderRadius: '8px',
+  fontSize: '1rem',
+};
+
+const buttonStyle = {
+  width: '100%',
+  padding: '12px',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '1.2rem',
+};
+
+export default EditRole;
+
+
+
+Employer.js
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; 
+
+const Employer = () => {
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+   
+    fetch('http://localhost:3001/applications')
+      .then((response) => response.json())
+      .then((data) => setApplications(data));
+  }, []);
+
+  const handleEmailClick = async (applicationId) => {
+    try {
+      
+      const response = await fetch(`http://localhost:3001/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Approved' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update application status');
+      }
+
+     
+      window.location.href = `mailto:727722euai044@skcet.ac.in`;
+    } catch (error) {
+      console.error('Error updating application status:', error);
+    }
+  };
+
+  const handleRejectClick = async (applicationId) => {
+    try {
+      
+      const response = await fetch(`http://localhost:3001/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'Rejected' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update application status');
+      }
+
+     
+      setApplications(applications.filter(app => app.id !== applicationId));
+    } catch (error) {
+      console.error('Error updating application status:', error);
+    }
+  };
+
+  return (
+    <div style={containerStyle}>
+      <Link to="/Home"> 
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/16/16304.png" 
+          alt="Logo"
+          style={logoStyle}
+        />
+      </Link>
+      <h2>RECRUITMENT PAGE</h2>
+      <div style={applicationsContainerStyle}>
+        {applications.map((application, index) => (
+          <div key={index} style={applicationBoxStyle}>
+            <p><strong>Name:</strong> {application.name}</p>
+            <p><strong>Education:</strong> {application.education}</p>
+            <p><strong>Year of Graduation:</strong> {application.graduationYear}</p>
+            <p><strong>Skills:</strong> {application.skills}</p>
+            <p><strong>Languages:</strong> {application.languages}</p>
+            <p><strong>Native Language:</strong> {application.native}</p>
+            <p><strong>CGPA:</strong> {application.cgpa}</p>
+            <p><strong>Phone Number:</strong> {application.phoneNumber}</p>
+            <div style={buttonContainerStyle}>
+              <button 
+                style={emailButtonStyle} 
+                onClick={() => handleEmailClick(application.id)}
+              >
+                Approve
+              </button>
+              <button 
+                style={rejectButtonStyle} 
+                onClick={() => handleRejectClick(application.id)}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  padding: '20px',
+  margin: '0',
+  minHeight: '100vh',
+  backgroundImage: 'url(https://www.elevatus.io/wp-content/uploads/2023/09/Untitled-design-8-1-1024x461.png)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+};
+
+const applicationsContainerStyle = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '1200px',
+};
+
+const applicationBoxStyle = {
+  backgroundColor: '#fff',
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+};
+
+const buttonContainerStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  marginTop: '10px',
+};
+
+const emailButtonStyle = {
+  padding: '8px 12px',
+  backgroundColor: '#007BFF',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
+
+const rejectButtonStyle = {
+  padding: '8px 12px',
+  backgroundColor: '#FF0000',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '5px',
+  cursor: 'pointer',
+};
+
+const logoStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  width: '50px',
+  height: '50px',
+  cursor: 'pointer',
+};
+
+export default Employer;
+
+
+
+
+EmployerLogin.js
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const EmployerLogin = () => {
+  const [password, setPassword] = useState('');
+  const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
+  const navigate = useNavigate();
+  const employerPassword = '12345'; 
+
+  useEffect(() => {
+    if (password === employerPassword) {
+      navigate('/employer');
+    } else if (password && password !== employerPassword) {
+      setIsPasswordInvalid(true);
+    }
+  }, [password, navigate]);
+
+  return (
+    <div style={containerStyle}>
+      <div style={formStyle}>
+        <h2 style={titleStyle}>Employer Login</h2>
+        <div style={formGroupStyle}>
+          <label style={labelStyle}>Enter Employer Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+            placeholder="Enter password"
+            required
+          />
+          {isPasswordInvalid && <p style={errorStyle}>Invalid password. Please try again.</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://media.istockphoto.com/id/1435605327/photo/cybersecurity-concept-global-network-security-technology-business-people-protect-personal.jpg?s=612x612&w=0&k=20&c=9QvqAsfANdpsNcYdZ0WlMd5lKaTR9BvnTpFnrtGbV0s=")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const formStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  padding: '30px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  width: '300px',
+  textAlign: 'left',
+};
+
+const formGroupStyle = {
+  marginBottom: '20px',
+};
+
+const titleStyle = {
+  textAlign: 'center',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '8px',
+  fontSize: '1.2rem',
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  boxSizing: 'border-box',
+  border: '2px solid #4caf50',
+  borderRadius: '8px',
+  fontSize: '1rem',
+};
+
+const errorStyle = {
+  color: 'red',
+  marginTop: '10px',
+};
+
+export default EmployerLogin;
+
+
+
+
+Footer.js
+
+// Footer.js
+import React from 'react';
+import { FaInstagram, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+
+const Footer = () => {
+  return (
+    <footer style={footerStyle}>
+      <div style={footerContainerStyle}>
+        <div style={footerTextStyle}>
+          &copy; 2024 Job Portal. All Rights Reserved.
+        </div>
+        <div style={iconContainerStyle}>
+          <a href="https://www.instagram.com/nivaa_shri_15" target="_blank" rel="noopener noreferrer" style={iconStyle}>
+            <FaInstagram />
+          </a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" style={iconStyle}>
+            <FaLinkedin />
+          </a>
+          <a href="mailto:someone@example.com" style={iconStyle}>
+            <FaEnvelope />
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+const footerStyle = {
+  backgroundColor: '#333',
+  color: '#fff',
+  padding: '5px 0', 
+  position: 'fixed',
+  bottom: '0',
+  width: '100%',
+  textAlign: 'center',
+};
+
+const footerContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '0 20px',
+  boxSizing: 'border-box',
+};
+
+const iconContainerStyle = {
+  display: 'flex',
+  gap: '5px', 
+  marginTop: '5px', 
+};
+
+const iconStyle = {
+  color: '#fff',
+  fontSize: '1rem', 
+  textDecoration: 'none',
+};
+
+const footerTextStyle = {
+  fontSize: '0.65rem', 
+};
+
+export default Footer;
+
+
+
+
+Home.js
+
+// Home.js
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import './App.css';
+
+const Home = () => {
+  const navigate = useNavigate();
+
+  const handleAdminClick = () => {
+    navigate('/admin-login');
+  };
+
+  return (
+    <div style={homeContainerStyle}>
+      <div style={contentContainerStyle}>
+        <h2 style={{ marginBottom: '20px' }}>Welcome</h2>
+        <button onClick={handleAdminClick} style={linkStyle}>Admin</button>
+        <Link to="/employer-login" style={linkStyle}>Employee</Link>
+        <Link to="/seeker" style={linkStyle}>Job Seeker</Link>
+      </div>
+    </div>
+  );
+};
+
+const homeContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://t3.ftcdn.net/jpg/08/11/20/32/360_F_811203275_gTauhLPVxcNSGLhkd9EW7vKKqWDAZL5e.jpg")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+  color: 'white',
+  textAlign: 'center',
+};
+
+const contentContainerStyle = {
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  padding: '40px',
+  borderRadius: '15px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '300px',
+};
+
+const linkStyle = {
+  color: 'white',
+  textDecoration: 'none',
+  margin: '10px 0',
+  fontSize: '1.5rem',
+  fontWeight: 'bold',
+  backgroundColor: 'transparent', 
+  border: 'none', 
+  cursor: 'pointer', 
+};
+
+export default Home;
+
+
+
+
+index.css
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+
+
+index.js
+
+// index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import { RolesProvider } from './RolesContext';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <RolesProvider>
+      <App />
+    </RolesProvider>
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+
+
+
+Login.js
+
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { fetchUsers } from './redux/actions';
+import './App.css';
+
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const users = useSelector((state) => state.users);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(fetchUsers());
+  }, [dispatch]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const user = users.find((user) => user.email === email && user.password === password);
+    if (user) {
+      navigate('/home');
+    } else {
+      setError('Invalid email or password');
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        width: '100%',
+        backgroundImage: "url('https://media.licdn.com/dms/image/D5612AQHmWpsKqCEUgQ/article-cover_image-shrink_600_2000/0/1692110377639?e=2147483647&v=beta&t=61b3z7n63D8ABJOVLQKG4W6iObvwTBn-ZuMabStZugM')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '20px',
+      }}
+    >
+      <h2 style={{ color: '#fff', marginBottom: '20px', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '2rem' }}>
+        Login
+      </h2>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '20px',
+          borderRadius: '15px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          width: '230px',
+          textAlign: 'left',
+        }}
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            style={{ display: 'block', marginBottom: '8px', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}
+          >
+            Email:
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              boxSizing: 'border-box',
+              border: '2px solid #ccc',
+              borderRadius: '8px',
+              fontSize: '1rem',
+            }}
+          />
+        </div>
+        <div style={{ marginBottom: '20px' }}>
+          <label
+            style={{ display: 'block', marginBottom: '8px', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}
+          >
+            Password:
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              boxSizing: 'border-box',
+              border: '2px solid #ccc',
+              borderRadius: '8px',
+              fontSize: '1rem',
+            }}
+          />
+        </div>
+        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+        <button
+          type="submit"
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#000000',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: 'Comic Sans MS, cursive, sans-serif',
+            fontSize: '1.2rem',
+          }}
+        >
+          Login
+        </button>
+      </form>
+      <p style={{ color: '#b72527', marginTop: '40px', fontFamily: 'Comic Sans MS, cursive, sans-serif', fontSize: '1.2rem' }}>
+        Don't have an account? <Link to="/signup" style={{ color: '#2f50ba', fontSize: '1.2rem' }}>Sign up</Link>
+      </p>
+    </div>
+  );
+};
+
+export default Login;
+
+
+
+
+Profile.js
+
+
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
+const Profile = () => {
+  const [companyName, setCompanyName] = useState('');
+  const [url, setUrl] = useState('');
+  const [profiles, setProfiles] = useState([]);
+
+  useEffect(() => {
+    // Fetch existing profiles from db.json
+    fetch('http://localhost:3001/profiles')
+      .then(response => response.json())
+      .then(data => setProfiles(data));
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newProfile = { companyName, url };
+
+    // Post new profile to db.json
+    fetch('http://localhost:3001/profiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newProfile),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setProfiles([...profiles, data]);
+        setCompanyName('');
+        setUrl('');
+      });
+  };
+
+  return (
+    <div style={containerStyle}>
+      <Link to="/admin-dashboard" style={homeButtonStyle}>Home</Link> {/* Home button */}
+      <h2 style={headingStyle}>Company Profile</h2>
+      <form onSubmit={handleSubmit} style={formStyle}>
+        <div style={inputContainerStyle}>
+          <label style={labelStyle}>Company Name:</label>
+          <input
+            type="text"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            style={inputStyle}
+            required
+          />
+        </div>
+        <div style={inputContainerStyle}>
+          <label style={labelStyle}>URL:</label>
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            style={inputStyle}
+            required
+          />
+        </div>
+        <button type="submit" style={buttonStyle}>Add Profile</button>
+      </form>
+      <div style={profilesContainerStyle}>
+        {profiles.length > 0 ? (
+          profiles.map((profile, index) => (
+            <div key={index} style={profileStyle}>
+              <p><strong>Company Name:</strong> {profile.companyName}</p>
+              <p><strong>URL:</strong> <a href={profile.url} target="_blank" rel="noopener noreferrer">{profile.url}</a></p>
+            </div>
+          ))
+        ) : (
+          <p>No profiles available.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  padding: '20px',
+  backgroundImage: 'url(https://media.licdn.com/dms/image/D4D12AQHaA-7xcFTZZg/article-cover_image-shrink_720_1280/0/1679553115543?e=2147483647&v=beta&t=UBLtIaa5PcfzcluQhiTWmj8Dxagz8dnY-QQchbWwKYs)', // Background image
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  position: 'relative', // Added to position the Home button
+};
+
+const headingStyle = {
+  marginBottom: '20px',
+  fontSize: '2rem',
+};
+
+const formStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100%',
+  maxWidth: '600px',
+  backgroundColor: 'rgba(255, 255, 255, 0.9)', // Lightly transparent background for form
+  padding: '20px',
+  borderRadius: '8px',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+};
+
+const inputContainerStyle = {
+  marginBottom: '15px',
+  width: '100%',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '5px',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '10px',
+  borderRadius: '4px',
+  border: '2px solid #4caf50', // Green border color for inputs
+};
+
+const buttonStyle = {
+  padding: '10px 20px',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  border: 'none',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+
+const profilesContainerStyle = {
+  marginTop: '20px',
+  width: '100%',
+  maxWidth: '600px',
+};
+
+const profileStyle = {
+  marginBottom: '15px',
+  padding: '10px',
+  backgroundColor: 'white',
+  borderRadius: '4px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+};
+
+const homeButtonStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  padding: '10px 20px',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  textDecoration: 'none',
+  borderRadius: '4px',
+};
+
+export default Profile;
+
+
+
+
+
+RolesContext.js
+
+// RolesContext.js
+import React, { createContext, useState, useEffect } from 'react';
+
+export const RolesContext = createContext();
+
+export const RolesProvider = ({ children }) => {
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = async () => {
+    const response = await fetch('http://localhost:3001/roles');
+    const data = await response.json();
+    setRoles(data);
+  };
+
+  const addRole = async (newRole) => {
+    await fetch('http://localhost:3001/roles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newRole),
+    });
+    fetchRoles();
+  };
+
+  return (
+    <RolesContext.Provider value={{ roles, addRole }}>
+      {children}
+    </RolesContext.Provider>
+  );
+};
+
+
+
+
+Seeker.js
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
+const Seeker = () => {
+  const [roles, setRoles] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetch('http://localhost:3001/roles')
+      .then((response) => response.json())
+      .then((data) => setRoles(data));
+  }, []);
+
+  const filteredRoles = roles.filter((role) =>
+    role.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.experience?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div style={containerStyle}>
+      
+      <Link to="/company" style={companyButtonStyle}>Company</Link>
+
+      
+      <Link to="/application-status"> 
+        <img
+          src="https://static.thenounproject.com/png/3592817-200.png"
+          alt="Right Logo"
+          style={rightLogoStyle}
+        />
+      </Link>
+      
+      
+      <h2>Job Page</h2>
+      <input
+        type="text"
+        placeholder="Search by Role, Company, or Experience"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={searchBarStyle}
+      />
+      <div style={rolesContainerStyle}>
+        {filteredRoles.map((role) => (
+          <div key={role.id} style={roleBoxStyle}>
+            {role.imageURL && <img src={role.imageURL} alt={role.role} style={imageStyle} />}
+            <p><strong>Role:</strong> {role.role}</p>
+            <p><strong>Company Name:</strong> {role.companyName}</p>
+            <p><strong>Location:</strong> {role.location}</p>
+            <p><strong>Skills:</strong> {role.skills}</p>
+            <p><strong>Years of Experience:</strong> {role.experience}</p>
+            <p><strong>Salary:</strong> {role.salary}</p>
+            <Link to={`/apply/${role.id}`} style={applyButtonStyle}>Apply</Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  padding: '20px',
+  margin: '0',
+  minHeight: '100vh',
+  backgroundImage: 'url(https://cdn.create.vista.com/api/media/small/69824439/stock-photo-job-and-magnifier-search-sign-in-blue-glass-blocks)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative', 
+};
+
+const searchBarStyle = {
+  padding: '10px',
+  margin: '20px 0',
+  width: '100%',
+  maxWidth: '500px',
+  borderRadius: '8px',
+  border: '2px solid #4caf50',
+  fontSize: '1rem',
+};
+
+const rolesContainerStyle = {
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '1200px',
+};
+
+const roleBoxStyle = {
+  backgroundColor: '#fff',
+  padding: '10px',
+  borderRadius: '8px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+};
+
+const imageStyle = {
+  width: '100%',
+  height: 'auto',
+  maxHeight: '200px',
+  marginBottom: '10px',
+  borderRadius: '4px',
+};
+
+const applyButtonStyle = {
+  display: 'block',
+  marginTop: '10px',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '10px',
+  border: 'none',
+  borderRadius: '4px',
+  textAlign: 'center',
+  textDecoration: 'none',
+};
+
+const rightLogoStyle = {
+  position: 'absolute',
+  top: '20px',
+  right: '20px',
+  width: '70px', 
+  height: 'auto',
+};
+
+const companyButtonStyle = {
+  position: 'absolute',
+  top: '20px',
+  left: '20px',
+  padding: '10px 20px', // Increased padding for a larger button
+  backgroundColor: '#4caf50',
+  color: 'white',
+  textDecoration: 'none',
+  borderRadius: '4px',
+  fontSize: '1rem', // Increased font size
+  textAlign: 'center',
+  fontWeight: 'bold', // Optional: Make text bold for better visibility
+};
+
+
+export default Seeker;
+
+
+
+
+Signup.js
+
+
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { addUser } from './redux/actions';
+import './App.css';
+
+const Signup = () => {
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newUser = { email, name, password };
+
+    await fetch('http://localhost:3001/users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newUser),
+    });
+
+    dispatch(addUser(newUser));
+    navigate('/home');
+  };
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundImage: "url('https://www.asarampublicschool.com/images/job.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        padding: '20px',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '30px',
+          borderRadius: '15px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+          width: '250px',
+          textAlign: 'left',
+        }}
+      >
+        <h2 style={{ textAlign: 'center', color: '#0e0108', fontFamily: 'Comic Sans MS, cursive, sans-serif' }}>Sign Up</h2>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Email:
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Name:
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '1.2rem',
+                color: '#0e0108',
+                fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              }}
+            >
+              Password:
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                boxSizing: 'border-box',
+                border: '2px solid #4caf50',
+                borderRadius: '8px',
+                fontSize: '1rem',
+              }}
+            />
+          </div>
+          <button
+            type="submit"
+            style={{
+              width: '100%',
+              padding: '12px',
+              backgroundColor: '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Comic Sans MS, cursive, sans-serif',
+              fontSize: '1.2rem',
+            }}
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;
+
+
+
+
+
+UpdateRole.js
+
+
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
+const UpdateRole = () => {
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      const response = await fetch('http://localhost:3001/roles');
+      const data = await response.json();
+      setRoles(data);
+    };
+
+    fetchRoles();
+  }, []);
+
+  return (
+    <div style={containerStyle}>
+      <div style={headerStyle}>
+        <h2 style={headingStyle}>Update Role</h2>
+        <Link to="/admin-dashboard" style={homeButtonStyle}>Home</Link>
+      </div>
+      <div style={rolesContainerStyle}>
+        {roles.map((role, index) => (
+          <div key={index} style={roleBoxStyle}>
+            {role.imageURL && <img src={role.imageURL} alt={role.role} style={imageStyle} />}
+            <p><strong>Role:</strong> {role.role}</p>
+            <p><strong>Company Name:</strong> {role.companyName}</p>
+            <p><strong>Location:</strong> {role.location}</p>
+            <p><strong>Skills:</strong> {role.skills}</p>
+            <p><strong>Years of Experience:</strong> {role.experience}</p>
+            <p><strong>Salary:</strong> {role.salary}</p>
+            <Link to={`/admin/edit-role/${role.id}`} style={buttonStyle}>Edit</Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const containerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  backgroundImage: 'url("https://d1m75rqqgidzqn.cloudfront.net/wp-data/2021/08/16082833/iStock-540983728.jpg")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  padding: '20px',
+};
+
+const headerStyle = {
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',  // Center horizontally
+  alignItems: 'center',
+  marginBottom: '20px',
+  position: 'relative',  // For positioning the home button
+};
+
+const headingStyle = {
+  color: '#0e0108',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '2rem',
+  margin: '0',  // Remove default margin
+};
+
+const homeButtonStyle = {
+  position: 'absolute',
+  right: '20px',
+  top: '20px',
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '8px 16px',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '1rem',
+  textDecoration: 'none',
+  textAlign: 'center',
+};
+
+const rolesContainerStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '1200px',
+  boxSizing: 'border-box',
+};
+
+const roleBoxStyle = {
+  backgroundColor: 'rgba(255, 255, 255, 0.9)', // Lightly transparent white background for box
+  padding: '20px',
+  borderRadius: '15px',
+  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  textAlign: 'left',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  height: 'auto',
+  boxSizing: 'border-box',
+};
+
+const imageStyle = {
+  width: '100%',
+  height: 'auto',
+  maxHeight: '200px',
+  marginBottom: '10px',
+  borderRadius: '4px',
+};
+
+const buttonStyle = {
+  backgroundColor: '#4caf50',
+  color: 'white',
+  padding: '8px 16px',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontFamily: "'Comic Sans MS', cursive, sans-serif",
+  fontSize: '1rem',
+  alignSelf: 'center',
+  marginTop: 'auto',
+  textDecoration: 'none',
+  textAlign: 'center',
+};
+
+export default UpdateRole;
+
+
+
+
+
+db.json
+
+
+{
+  "users": [
+    {
+      "id": "4cce"
+    },
+    {
+      "id": "8c4e",
+      "email": "yaazhini@123",
+      "name": "yaazhini",
+      "password": "yazhini"
+    },
+    {
+      "id": "43b4",
+      "email": "nivaa@123",
+      "name": "nivaa",
+      "password": "nivaa"
+    },
+    {
+      "id": "d796",
+      "email": "jk@05",
+      "name": "jayakaran",
+      "password": "jk05"
+    },
+    {
+      "id": "dee0",
+      "email": "nivaa@123",
+      "name": "nivaa",
+      "password": "12345"
+    },
+    {
+      "id": "88c1",
+      "email": "sathya@123",
+      "name": "sathya",
+      "password": "12345"
+    }
+  ],
+  "roles": [
+    {
+      "id": "3500",
+      "role": "FrontEnd Developer",
+      "companyName": "Colan Infotech",
+      "location": "Chennai",
+      "skills": "ReactJS,Angular JS,Bootstrap",
+      "experience": "10",
+      "salary": "120000",
+      "imageURL": "https://www.altexsoft.com/static/blog-post-featured/2023/10/787e3d7c-9d46-4959-940f-40617f4c46a6.jpg"
+    },
+    {
+      "id": "214f",
+      "role": "BackEnd Developer",
+      "companyName": "Aspect Solution",
+      "location": "Tiruchirappalli",
+      "skills": "Java, Data Structure,DAA",
+      "experience": "1",
+      "salary": "90000",
+      "imageURL": "https://t3.ftcdn.net/jpg/07/38/96/80/360_F_738968048_Ns8pKOZbKrSfWbX9h8dO4Y1LHSbdtuVw.jpg"
+    },
+    {
+      "id": "d962",
+      "role": "Data Analyst",
+      "companyName": "Cognizant",
+      "location": "Coimbatore",
+      "skills": "Microsoft Excel, Power BI, Data Visualization",
+      "experience": "1",
+      "salary": "150000",
+      "imageURL": "https://d1pddsf91ofvl9.cloudfront.net/wp-content/uploads/2023/04/26222057/pelatihan-data-analyst-1-scaled.jpg"
+    },
+    {
+      "id": "b5e6",
+      "role": "Full Stack Developer",
+      "companyName": "Tata Consultancy Services",
+      "location": "Chennai",
+      "skills": "HTML, CSS, Java Script, Java, SQL",
+      "experience": "2",
+      "salary": "250000",
+      "imageURL": "https://sklc-tinymce-2021.s3.amazonaws.com/comp/2023/04/full-stack%20web%20development_1681290664.png"
+    },
+    {
+      "id": "4beb",
+      "role": "DevOps Engineer",
+      "companyName": "Amazon Web Services",
+      "location": "Bangalore",
+      "skills": "Java Script, Ruby, ",
+      "experience": "4",
+      "salary": "250000",
+      "imageURL": "https://imageio.forbes.com/specials-images/imageserve/60f1e792c7e89f933811814c/DevOps-concept/960x0.jpg?format=jpg&width=960"
+    },
+    {
+      "id": "969b",
+      "role": "IT Security Specialist",
+      "companyName": "IBM",
+      "location": "Bengaluru",
+      "skills": "Operating System, Programming Languages",
+      "experience": "0",
+      "salary": "100000",
+      "imageURL": "https://www.ituonline.com/wp-content/uploads/2023/12/A-professional-and-engaging-wide-banner-image-representing-the-career-of-a-Cyber-Security-Specialist.-The-design-includes-a-digital-landscape-backgrou.jpg"
+    },
+    {
+      "id": "7d76",
+      "role": "UI / UX Designer",
+      "companyName": "Lollypop",
+      "location": "Mumbai",
+      "skills": "Wireframing, Figma, Proficiency",
+      "experience": "0",
+      "salary": "300000",
+      "imageURL": "https://ninjasites.com/images/blog/website-user-experience.png?v=1684153977260389102"
+    },
+    {
+      "id": "ebbd",
+      "role": "Software Tester",
+      "companyName": "Eleviant Tech",
+      "location": "Chennai",
+      "skills": "Analytic Reasoning, Automation",
+      "experience": "1",
+      "salary": "110000",
+      "imageURL": "https://cdn-gcp.new.marutitech.com/medium_cdd0b969_softwaretesting_705f803d6e.jpg"
+    }
+  ],
+  "applications": [
+    {
+      "id": "a293",
+      "name": "Nivaa Shri S M",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2024",
+      "skills": "React JS, Bootstrap",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "9.5",
+      "phoneNumber": "9524996838",
+      "roleId": "3500",
+      "status": "Rejected"
+    },
+    {
+      "id": "66eb",
+      "name": "Rakisha R",
+      "education": "Bachelor of Technology",
+      "graduationYear": "2026",
+      "skills": "Java",
+      "languages": "English, Tamil",
+      "native": "Tamil",
+      "cgpa": "9.3",
+      "phoneNumber": "9443846920",
+      "roleId": "214f",
+      "status": "Rejected"
+    },
+    {
+      "id": "ac14",
+      "name": "Mohanapriya S",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2022",
+      "skills": "PowerBI",
+      "languages": "English, Telugu, Tamil",
+      "native": "Telugu",
+      "cgpa": "9.9",
+      "phoneNumber": "6374496485",
+      "roleId": "d962",
+      "status": "Approved"
+    },
+    {
+      "id": "6716",
+      "name": "Yaazhini T S",
+      "education": "Bachelor of Technology",
+      "graduationYear": "2023",
+      "skills": "Java, JavaScript, SQL",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.9",
+      "phoneNumber": "7418250545",
+      "roleId": "b5e6",
+      "status": "Rejected"
+    },
+    {
+      "id": "f4fd",
+      "name": "Pooja M",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2020",
+      "skills": "Ruby",
+      "languages": "Tamil,English",
+      "native": "Tamil",
+      "cgpa": "8.5",
+      "phoneNumber": "7010834381",
+      "roleId": "4beb"
+    },
+    {
+      "id": "8cb1",
+      "name": "Atchaya T",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2023",
+      "skills": "Figma",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.0",
+      "phoneNumber": "9677524234",
+      "roleId": "7d76"
+    },
+    {
+      "id": "8cde",
+      "name": "nivaa",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2023",
+      "skills": "Figma",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.0",
+      "phoneNumber": "9677524234",
+      "roleId": "3500",
+      "status": "Approved"
+    },
+    {
+      "id": "41c8",
+      "name": "priya",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2023",
+      "skills": "Figma",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.0",
+      "phoneNumber": "9677524234",
+      "roleId": "3500"
+    },
+    {
+      "id": "0f92",
+      "name": "priya",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2023",
+      "skills": "Figma",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.0",
+      "phoneNumber": "9677524234",
+      "roleId": "3500"
+    },
+    {
+      "id": "12fe",
+      "name": "sathya",
+      "education": "Bachelor of Engineering",
+      "graduationYear": "2023",
+      "skills": "Figma",
+      "languages": "Tamil, English",
+      "native": "Tamil",
+      "cgpa": "8.0",
+      "phoneNumber": "9677524234",
+      "roleId": null,
+      "status": "Rejected"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "3677",
+      "companyName": "Infosys",
+      "url": "https://www.infosys.com/contact.html"
+    },
+    {
+      "id": "a8c2",
+      "companyName": "Colan Infotech",
+      "url": "https://colaninfotech.com/about-us/"
+    },
+    {
+      "id": "9594",
+      "companyName": "Aspect Solution",
+      "url": "https://aspectsolutions.com/"
+    },
+    {
+      "id": "2e79",
+      "companyName": " Cognizant",
+      "url": "https://www.cognizant.com/us/en/about-cognizant/contact-us"
+    },
+    {
+      "id": "4b20",
+      "companyName": "Tata Consultancy Services",
+      "url": "https://www.tata.com/business/tcs"
+    },
+    {
+      "id": "2219",
+      "companyName": "Amazon Web Services",
+      "url": "https://aws.amazon.com/about-aws/"
+    },
+    {
+      "id": "32ee",
+      "companyName": "IBM",
+      "url": "https://www.ibm.com/mysupport/s/article/Changes-to-Profile?language=en_US"
+    },
+    {
+      "id": "8d24",
+      "companyName": "Lollypop",
+      "url": "https://www.behance.net/LollypopDesign"
+    },
+    {
+      "id": "3cc3",
+      "companyName": "Eleviant Tech",
+      "url": "https://www.ambitionbox.com/overview/eleviant-tech-overview"
+    }
+  ]
+}
+
+
+
+Package.json
+
+
+{
+  "name": "second",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.7.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.2.1",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^6.25.1",
+    "react-scripts": "5.0.1",
+    "redux": "^5.0.1",
+    "redux-thunk": "^3.1.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "server": "json-server --watch db.json --port 3001"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+
+
+
+Commands
+  
+
+     cd project name.
+1. npm install react-router-dom
+
+2.npm install axios
+
+3.npm install -g json-server
+
+4.npm run server
+
+5.npm start
+
+
